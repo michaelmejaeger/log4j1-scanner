@@ -32,7 +32,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>com.logpresso.scanner.Log4j2Scanner</mainClass>
+							<mainClass>com.logpresso.scanner.Log4j1Scanner</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

@@ -28,7 +28,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-public class Log4j2Scanner {
+public class Log4j1Scanner {
 	private static final String BANNER = "Logpresso CVE-2021-44228 Vulnerability Scanner 1.5.0 (2021-12-15)";
 
 	public enum Status {
@@ -72,7 +72,7 @@ public class Log4j2Scanner {
 
 	public static void main(String[] args) {
 		try {
-			Log4j2Scanner scanner = new Log4j2Scanner();
+			Log4j1Scanner scanner = new Log4j1Scanner();
 			scanner.run(args);
 			System.exit(scanner.vulnerableFileCount + scanner.potentiallyVulnerableFileCount);
 		} catch (Throwable t) {
