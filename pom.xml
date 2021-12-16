@@ -5,8 +5,8 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.logpresso</groupId>
-	<artifactId>log4j2-scanner</artifactId>
-	<version>1.0.0</version>
+	<artifactId>log4j1-scanner</artifactId>
+	<version>1.1.0</version>
 	<packaging>jar</packaging>
 	<name>Log4j1 Scanner</name>
 

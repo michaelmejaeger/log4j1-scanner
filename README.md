@@ -17,45 +17,39 @@ Usage
 Usage: log4j1-scan [--fix] target_path
 
 --fix
-	Backup original file and remove dangerous classes from archive recursively.
+  Backup original file and remove dangerous classes from archive recursively.
 --force-fix
-	Do not prompt confirmation. Don't use this option unless you know what you are doing.
+  Do not prompt confirmation. Don't use this option unless you know what you are doing.
+--keep-backup
+  Keep the backup of the original file for each file that is modified. The extension of the keepBackup file is '.bak'.
 --debug
-	Print exception stacktrace for debugging.
+  Print exception stacktrace for debugging.
 --trace
-	Print all directories and files while scanning.
+  Print all directories and files while scanning.
 --silent
-	Do not print anything until scan is completed.
+  Do not print anything until scan is completed.
 --scan-zip
-	Scan also .zip extension files. This option may slow down scanning.
+  Scan also .zip extension files. This option may slow down scanning.
 --no-symlink
-	Do not detect symlink as vulnerable file.
+  Do not detect symlink as vulnerable file.
 --exclude [path_prefix]
-	Exclude specified paths. You can specify multiple --exclude [path_prefix] pairs
+  Exclude specified paths. You can specify multiple --exclude [path_prefix] pairs
 --exclude-config [file_path]
 --exclude-pattern [pattern]
-	Exclude specified paths by pattern. You can specify multiple --exclude-pattern [pattern] pairs (non regex)
-	Specify exclude path list in text file. Paths should be separated by new line. Prepend # for comment.
+  Exclude specified paths by pattern. You can specify multiple --exclude-pattern [pattern] pairs (non regex)
+  Specify exclude path list in text file. Paths should be separated by new line. Prepend # for comment.
 --all-drives
-	Scan all drives on Windows
+  Scan all drives on Windows
 --drives c,d
-	Scan specified drives on Windows. Spaces are not allowed here.
+  Scan specified drives on Windows. Spaces are not allowed here.
 ```
 
-On Windows
-```
-log4j2-scan [--fix] target_path
-```
 On Linux
 ```
-./log4j2-scan [--fix] target_path
-```
-On UNIX (AIX, Solaris, and so on)
-```
-java -jar logpresso-log4j2-scan-1.5.0.jar [--fix] target_path
+java -jar log4j1-scanner-1.1.0 [--fix] target_path
 ```
 
-If you add `--fix` option, this program will copy vulnerable original JAR file to .bak file, and create new JAR file without the potentially dangerous class files. However, you must use this option at your own risk. It is necessary to shutdown any running JVM process before applying patch. Start affected JVM process after fix.
+If you add `--fix` option, this program will copy vulnerable original JAR file to .bak file, and create new JAR file without the potentially dangerous class files. However, you must use this option at your own risk. It is necessary to shutdown any running JVM process before applying patch. This backup file is only kept if the switch `--backup` is used. Start affected JVM process after fix.
 
 If you want to automate patch job, use `--force-fix` option. With this option, this program will no longer prompt for confirmation.
 

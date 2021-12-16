@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -32,7 +34,7 @@ import java.util.zip.ZipOutputStream;
 public class Log4j1Scanner {
 	private static final String CVE_SOCKET_SERVER = "CVE-2019-17571";
 	private static final String CVE_JMS_APPENDER = "CVE-2021-4104";
-	public static final String VERSION = "v0.0.1-SNAPSHOT";
+	public static final String VERSION = "v1.1.0";
 	private static final String SIMPLE_SOCKET_SERVER_CLASS_FILE = "org/apache/log4j/net/SimpleSocketServer.class";
 	private static final String JMS_APPENDER_CLASS_FILE = "org/apache/log4j/net/JMSAppender.class";
 	private static final Set<String> DANGEROUS_CLASS_FILES = new HashSet<String>(Arrays.asList(SIMPLE_SOCKET_SERVER_CLASS_FILE, JMS_APPENDER_CLASS_FILE));
@@ -65,6 +67,7 @@ public class Log4j1Scanner {
 
 	// options
 	private String targetPath;
+	private boolean keepBackup = false;
 	private boolean debug = false;
 	private boolean trace = false;
 	private boolean silent = false;
@@ -122,6 +125,8 @@ public class Log4j1Scanner {
 		System.out.println("\tBackup original file and remove dangerous classes from archive recursively.");
 		System.out.println("--force-fix");
 		System.out.println("\tDo not prompt confirmation. Don't use this option unless you know what you are doing.");
+		System.out.println("--keep-backup");
+		System.out.println("\tKeep the backup of the original file for each file that is modified. The extension of the keepBackup file is '.bak'.");
 		System.out.println("--debug");
 		System.out.println("\tPrint exception stacktrace for debugging.");
 		System.out.println("--trace");
@@ -153,6 +158,8 @@ public class Log4j1Scanner {
 			} else if (args[i].equals("--force-fix")) {
 				fix = true;
 				force = true;
+			} else if (args[i].equals("--keep-backup")) {
+				this.keepBackup = true;
 			} else if (args[i].equals("--debug")) {
 				debug = true;
 			} else if (args[i].equals("--trace")) {
@@ -303,6 +310,7 @@ public class Log4j1Scanner {
 	public void run() {
 		scanStartTime = System.currentTimeMillis();
 		System.out.println(BANNER);
+		System.out.println("Scan started at: " + Instant.now());
 		try {
 			if (allDrives) {
 				int i = 0;
@@ -338,6 +346,7 @@ public class Log4j1Scanner {
 				System.out.println("Fixed " + fixedFileCount + " vulnerable files");
 
 			System.out.printf("Completed in %.2f seconds\n", elapsed / 1000.0);
+			System.out.println("Scan finished at: " + Instant.now());
 		}
 	}
 
@@ -380,10 +389,28 @@ public class Log4j1Scanner {
 					fixedFileCount++;
 
 					System.out.printf("Fixed: %s%s%n", f.getAbsolutePath(), symlinkMsg);
+					if(!this.keepBackup) {
+						try {
+							Files.delete(backupFile.toPath());
+						} catch (IOException e) {
+							throw new RuntimeException(String.format("ERROR: Could not delete keepBackup file '%s': %s%n", backupFile.getAbsolutePath(), e.getMessage()));
+						}
+					}
 				} else {
 					// rollback operation
-					copyAsIs(backupFile, f);
+					System.err.printf("ERROR: Could not fix file '%s', performing rollback...%n", f.getAbsolutePath());
+					if(!copyAsIs(backupFile, f)) {
+						throw new RuntimeException(String.format("ERROR: Could not rollback file '%s'...%n", f.getAbsolutePath()));
+					} else {
+						try {
+							Files.delete(backupFile.toPath());
+						} catch (IOException e) {
+							throw new RuntimeException(String.format("ERROR: Could not delete backup file '%s': %s%n", backupFile.getAbsolutePath(), e.getMessage()));
+						}
+					}
 				}
+			} else {
+				throw new RuntimeException(String.format("ERROR: Could not create backup of file '%s'%n", f.getAbsolutePath()));
 			}
 		}
 	}
