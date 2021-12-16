@@ -6,9 +6,9 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.logpresso</groupId>
 	<artifactId>log4j2-scanner</artifactId>
-	<version>1.5.0</version>
+	<version>1.0.0</version>
 	<packaging>jar</packaging>
-	<name>Logpresso Log4j2 Scanner</name>
+	<name>Log4j1 Scanner</name>
 
 	<licenses>
 		<license>
@@ -39,4 +39,12 @@
 			</plugin>
 		</plugins>
 	</build>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.3.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies> 
 </project>

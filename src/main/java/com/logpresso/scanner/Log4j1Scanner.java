@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -29,15 +30,21 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class Log4j1Scanner {
-	private static final String BANNER = "Logpresso CVE-2021-44228 Vulnerability Scanner 1.5.0 (2021-12-15)";
+	private static final String CVE_SOCKET_SERVER = "CVE-2019-17571";
+	private static final String CVE_JMS_APPENDER = "CVE-2021-4104";
+	public static final String VERSION = "v0.0.1-SNAPSHOT";
+	private static final String SIMPLE_SOCKET_SERVER_CLASS_FILE = "org/apache/log4j/net/SimpleSocketServer.class";
+	private static final String JMS_APPENDER_CLASS_FILE = "org/apache/log4j/net/JMSAppender.class";
+	private static final Set<String> DANGEROUS_CLASS_FILES = new HashSet<String>(Arrays.asList(SIMPLE_SOCKET_SERVER_CLASS_FILE, JMS_APPENDER_CLASS_FILE));
+	private static final String BANNER = "log4j 1.x Vulnerability Scanner " + VERSION + " based on Logpresso CVE-2021-44228 (https://github.com/logpresso/CVE-2021-44228-Scanner)"
+	        + "\n-> Checking for these class files: " + Log4j1Scanner.DANGEROUS_CLASS_FILES.toString() + "\n";
 
 	public enum Status {
 		NOT_VULNERABLE, MITIGATED, POTENTIALLY_VULNERABLE, VULNERABLE;
 	}
 
 	private static final String POTENTIALLY_VULNERABLE = "N/A - potentially vulnerable";
-	private static final String JNDI_LOOKUP_CLASS_PATH = "org/apache/logging/log4j/core/lookup/JndiLookup.class";
-	private static final String LOG4j_CORE_POM_PROPS = "META-INF/maven/org.apache.logging.log4j/log4j-core/pom.properties";
+	private static final String LOG4j_CORE_POM_PROPS = "META-INF/maven/log4j/log4j/pom.properties";
 	private static final boolean isWindows = File.separatorChar == '\\';
 
 	// status logging
@@ -91,7 +98,7 @@ public class Log4j1Scanner {
 
 		if (fix && !force) {
 			try {
-				System.out.print("This command will remove JndiLookup.class from log4j2-core binaries. Are you sure [y/N]? ");
+				System.out.print("This command will remove the following class files from log4j1 binaries. Are you sure [y/N]? ");
 				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 				String answer = br.readLine();
 				if (!answer.equalsIgnoreCase("y")) {
@@ -109,10 +116,10 @@ public class Log4j1Scanner {
 
 	private void pringUsage() {
 		System.out.println(BANNER);
-		System.out.println("Usage: log4j2-scan [--fix] target_path");
+		System.out.println("Usage: log4j1-scan [--fix] target_path");
 		System.out.println("");
 		System.out.println("--fix");
-		System.out.println("\tBackup original file and remove JndiLookup.class from JAR recursively.");
+		System.out.println("\tBackup original file and remove dangerous classes from archive recursively.");
 		System.out.println("--force-fix");
 		System.out.println("\tDo not prompt confirmation. Don't use this option unless you know what you are doing.");
 		System.out.println("--debug");
@@ -369,7 +376,7 @@ public class Log4j1Scanner {
 					continue;
 				}
 
-				if (copyExceptJndiLookup(backupFile, f)) {
+				if (copyExceptDangerousClasses(backupFile, f)) {
 					fixedFileCount++;
 
 					System.out.printf("Fixed: %s%s%n", f.getAbsolutePath(), symlinkMsg);
@@ -421,7 +428,7 @@ public class Log4j1Scanner {
 		}
 	}
 
-	private boolean copyExceptJndiLookup(File srcFile, File dstFile) {
+	private boolean copyExceptDangerousClasses(File srcFile, File dstFile) {
 		ZipFile srcZipFile = null;
 		ZipOutputStream zos = null;
 
@@ -435,8 +442,16 @@ public class Log4j1Scanner {
 			while (e.hasMoreElements()) {
 				ZipEntry entry = (ZipEntry) e.nextElement();
 
-				if (entry.getName().equals(JNDI_LOOKUP_CLASS_PATH))
+				boolean containsDangerousClassFile = false;
+				for (String dangerousClassFile : DANGEROUS_CLASS_FILES) {
+					containsDangerousClassFile = entry.getName().equals(dangerousClassFile);
+					if(containsDangerousClassFile) {
+						break;
+					}
+				}
+				if(containsDangerousClassFile) {
 					continue;
+				}
 
 				if (entry.isDirectory()) {
 					ZipEntry newEntry = new ZipEntry(entry.getName());
@@ -525,8 +540,16 @@ public class Log4j1Scanner {
 				if (zipEntry == null)
 					break;
 
-				if (zipEntry.getName().equals(JNDI_LOOKUP_CLASS_PATH))
+				boolean containsDangerousClassFile = false;
+				for (String dangerousClassFile : DANGEROUS_CLASS_FILES) {
+					containsDangerousClassFile = zipEntry.getName().equals(dangerousClassFile);
+					if(containsDangerousClassFile) {
+						break;
+					}
+				}
+				if (containsDangerousClassFile) {
 					continue;
+				}
 
 				if (zipEntry.isDirectory()) {
 					ZipEntry entry = new ZipEntry(zipEntry.getName());
@@ -731,9 +754,14 @@ public class Log4j1Scanner {
 	private Status checkLog4jVersion(File jarFile, boolean fix, ZipFile zipFile) throws IOException {
 		ZipEntry entry = zipFile.getEntry(LOG4j_CORE_POM_PROPS);
 		if (entry == null) {
-			// Check for existence of JndiLookup.class; e.g. somebody repacked the entries
+			// Check for existence of dangerous classes; e.g. somebody repacked the entries
 			// of the jars
-			entry = zipFile.getEntry(JNDI_LOOKUP_CLASS_PATH);
+			for(String dangerousClassFile : DANGEROUS_CLASS_FILES) {
+				entry = zipFile.getEntry(dangerousClassFile);
+				if(entry != null) {
+					break;
+				}
+			}
 			if (entry != null) {
 				String path = jarFile.getAbsolutePath();
 				printDetection(path, POTENTIALLY_VULNERABLE, false, true);
@@ -747,14 +775,16 @@ public class Log4j1Scanner {
 			is = zipFile.getInputStream(entry);
 
 			String version = loadVulnerableLog4jVersion(is);
-			if (version != null) {
-				boolean mitigated = zipFile.getEntry(JNDI_LOOKUP_CLASS_PATH) == null;
-				String path = jarFile.getAbsolutePath();
-				printDetection(path, version, mitigated, false);
-				return mitigated ? Status.MITIGATED : Status.VULNERABLE;
+			boolean mitigated = true;
+			for (String dangerousClassFile : DANGEROUS_CLASS_FILES) {
+				mitigated = zipFile.getEntry(dangerousClassFile) == null;
+				if(!mitigated) {
+					break;
+				}
 			}
-
-			return Status.NOT_VULNERABLE;
+			String path = jarFile.getAbsolutePath();
+			printDetection(path, version, mitigated, false);
+			return mitigated ? Status.MITIGATED : Status.VULNERABLE;
 		} finally {
 			ensureClose(is);
 		}
@@ -763,9 +793,7 @@ public class Log4j1Scanner {
 	private void printDetection(String path, String version, boolean mitigated, boolean potential) {
 		String msg = potential ? "[?]" : "[*]";
 
-		String cve = "CVE-2021-44228";
-		if (version.startsWith("2.15."))
-			cve = "CVE-2021-45046";
+		String cve = CVE_JMS_APPENDER + "/" + CVE_SOCKET_SERVER;
 
 		msg += " Found " + cve + " vulnerability in " + path + ", log4j " + version;
 		if (mitigated)
@@ -809,8 +837,11 @@ public class Log4j1Scanner {
 					pomFound = true;
 				}
 
-				if (entry.getName().equals(JNDI_LOOKUP_CLASS_PATH)) {
-					mitigated = false;
+				for (String dangerousClassFile : DANGEROUS_CLASS_FILES) {
+					if(entry.getName().equals(dangerousClassFile)) {
+						mitigated = false;
+						break;
+					}
 				}
 
 				if (isScanTarget(entry.getName())) {
@@ -876,18 +907,8 @@ public class Log4j1Scanner {
 		String artifactId = props.getProperty("artifactId");
 		String version = props.getProperty("version");
 
-		if (groupId.equals("org.apache.logging.log4j") && artifactId.equals("log4j-core")) {
-			String[] tokens = version.split("\\.");
-			int major = Integer.parseInt(tokens[0]);
-			int minor = Integer.parseInt(tokens[1]);
-			int patch = 0;
-
-			// e.g. version 2.0 has only 2 tokens
-			if (tokens.length > 2)
-				patch = Integer.parseInt(tokens[2]);
-
-			if (isVulnerable(major, minor, patch))
-				return version;
+		if (groupId.equals("log4j") && artifactId.equals("log4j")) {
+			return version;
 		}
 
 		return null;
@@ -921,10 +942,6 @@ public class Log4j1Scanner {
 		return false;
 	}
 
-	private boolean isVulnerable(int major, int minor, int patch) {
-		return major == 2 && minor < 16;
-	}
-
 	private void ensureClose(Closeable c) {
 		if (c != null) {
 			try {
@@ -941,5 +958,29 @@ public class Log4j1Scanner {
 			} catch (Throwable t) {
 			}
 		}
+	}
+
+	public long getScanDirCount() {
+		return scanDirCount;
+	}
+
+	public long getScanFileCount() {
+		return scanFileCount;
+	}
+
+	public int getMitigatedFileCount() {
+		return mitigatedFileCount;
+	}
+
+	public int getFixedFileCount() {
+		return fixedFileCount;
+	}
+
+	public int getPotentiallyVulnerableFileCount() {
+		return potentiallyVulnerableFileCount;
+	}
+
+	public int getVulnerableFileCount() {
+		return vulnerableFileCount;
 	}
 }
