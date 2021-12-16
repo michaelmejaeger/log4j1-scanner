@@ -46,7 +46,7 @@ Usage: log4j1-scan [--fix] target_path
 
 On Linux
 ```
-java -jar log4j1-scanner-1.1.0 [--fix] target_path
+java -jar log4j1-scanner-1.1.1 [--fix] target_path
 ```
 
 If you add `--fix` option, this program will copy vulnerable original JAR file to .bak file, and create new JAR file without the potentially dangerous class files. However, you must use this option at your own risk. It is necessary to shutdown any running JVM process before applying patch. This backup file is only kept if the switch `--backup` is used. Start affected JVM process after fix.

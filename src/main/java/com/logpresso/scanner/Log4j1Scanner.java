@@ -34,7 +34,7 @@ import java.util.zip.ZipOutputStream;
 public class Log4j1Scanner {
 	private static final String CVE_SOCKET_SERVER = "CVE-2019-17571";
 	private static final String CVE_JMS_APPENDER = "CVE-2021-4104";
-	public static final String VERSION = "v1.1.0";
+	public static final String VERSION = "v1.1.1";
 	private static final String SOCKET_SERVER_CLASS_FILE = "org/apache/log4j/net/SocketServer.class";
 	private static final String JMS_APPENDER_CLASS_FILE = "org/apache/log4j/net/JMSAppender.class";
 	private static final Set<String> DANGEROUS_CLASS_FILES = new HashSet<String>(Arrays.asList(SOCKET_SERVER_CLASS_FILE, JMS_APPENDER_CLASS_FILE));
