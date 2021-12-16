@@ -35,9 +35,9 @@ public class Log4j1Scanner {
 	private static final String CVE_SOCKET_SERVER = "CVE-2019-17571";
 	private static final String CVE_JMS_APPENDER = "CVE-2021-4104";
 	public static final String VERSION = "v1.1.0";
-	private static final String SIMPLE_SOCKET_SERVER_CLASS_FILE = "org/apache/log4j/net/SimpleSocketServer.class";
+	private static final String SOCKET_SERVER_CLASS_FILE = "org/apache/log4j/net/SocketServer.class";
 	private static final String JMS_APPENDER_CLASS_FILE = "org/apache/log4j/net/JMSAppender.class";
-	private static final Set<String> DANGEROUS_CLASS_FILES = new HashSet<String>(Arrays.asList(SIMPLE_SOCKET_SERVER_CLASS_FILE, JMS_APPENDER_CLASS_FILE));
+	private static final Set<String> DANGEROUS_CLASS_FILES = new HashSet<String>(Arrays.asList(SOCKET_SERVER_CLASS_FILE, JMS_APPENDER_CLASS_FILE));
 	private static final String BANNER = "log4j 1.x Vulnerability Scanner " + VERSION + " based on Logpresso CVE-2021-44228 (https://github.com/logpresso/CVE-2021-44228-Scanner)"
 	        + "\n-> Checking for these class files: " + Log4j1Scanner.DANGEROUS_CLASS_FILES.toString() + "\n";
 
