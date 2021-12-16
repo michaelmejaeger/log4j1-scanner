@@ -126,7 +126,7 @@ public class Log4j1Scanner {
 		System.out.println("--force-fix");
 		System.out.println("\tDo not prompt confirmation. Don't use this option unless you know what you are doing.");
 		System.out.println("--keep-backup");
-		System.out.println("\tKeep the backup of the original file for each file that is modified. The extension of the keepBackup file is '.bak'.");
+		System.out.println("\tKeep the backup of the original file for each file that is modified. The extension of the backup file is '.bak'.");
 		System.out.println("--debug");
 		System.out.println("\tPrint exception stacktrace for debugging.");
 		System.out.println("--trace");
@@ -393,7 +393,7 @@ public class Log4j1Scanner {
 						try {
 							Files.delete(backupFile.toPath());
 						} catch (IOException e) {
-							throw new RuntimeException(String.format("ERROR: Could not delete keepBackup file '%s': %s%n", backupFile.getAbsolutePath(), e.getMessage()));
+							throw new RuntimeException(String.format("ERROR: Could not delete backup file '%s': %s%n", backupFile.getAbsolutePath(), e.getMessage()));
 						}
 					}
 				} else {
