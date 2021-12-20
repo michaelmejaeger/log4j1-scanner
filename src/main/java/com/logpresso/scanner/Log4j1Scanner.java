@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.time.Instant;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -103,7 +104,8 @@ public class Log4j1Scanner {
 
 		if (fix && !force) {
 			try {
-				System.out.print("This command will remove the following class files from log4j1 binaries. Are you sure [y/N]? ");
+				System.out.print("This command will remove the following class files from log4j1 binaries: " + DANGEROUS_CLASS_FILES);
+				System.out.print("Are you sure [y/N]? ");
 				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 				String answer = br.readLine();
 				if (!answer.equalsIgnoreCase("y")) {
@@ -314,9 +316,8 @@ public class Log4j1Scanner {
 	}
 
 	public void run() {
-		scanStartTime = System.currentTimeMillis();
+		Instant scanStartedAt = Instant.now();
 		System.out.println(BANNER);
-		System.out.println("Scan started at: " + Instant.now());
 		try {
 			if (allDrives) {
 				int i = 0;
@@ -342,17 +343,19 @@ public class Log4j1Scanner {
 			if (fix)
 				fix(trace);
 		} finally {
-			long elapsed = System.currentTimeMillis() - scanStartTime;
+                        Instant scanFinishedAt = Instant.now();
+			long elapsed = scanFinishedAt.getLong(ChronoField.MILLI_OF_SECOND) - scanStartedAt.getLong(ChronoField.MILLI_OF_SECOND);
 			System.out.println();
 			System.out.println("Scanned " + scanDirCount + " directories and " + scanFileCount + " files");
-			System.out.println("Found " + vulnerableFileCount + " vulnerable files");
-			System.out.println("Found " + potentiallyVulnerableFileCount + " potentially vulnerable files");
-			System.out.println("Found " + mitigatedFileCount + " mitigated files");
+			System.out.println("Vulnerable files found: " + vulnerableFileCount);
+			System.out.println("Potentially vulnerable files found: " + potentiallyVulnerableFileCount);
+			System.out.println("Mitigated files found: " + mitigatedFileCount);
 			if (fix)
-				System.out.println("Fixed " + fixedFileCount + " vulnerable files");
+				System.out.println("Vulnerable files fixed: " + fixedFileCount);
 
-			System.out.printf("Completed in %.2f seconds\n", elapsed / 1000.0);
-			System.out.println("Scan finished at: " + Instant.now());
+                        System.out.println("Scan started at: " + scanStartedAt);
+			System.out.println("Scan finished at: " + scanFinishedAt);
+			System.out.printf("Completed in: %.2f seconds\n", elapsed / 1000.0);
 		}
 	}
 
