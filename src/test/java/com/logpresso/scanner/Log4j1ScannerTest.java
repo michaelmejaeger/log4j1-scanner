@@ -69,6 +69,7 @@ public class Log4j1ScannerTest {
 		assertEquals(1l * (NUM_FILES_TOTAL + NUM_FILES_VULNERABLE), scanner2.getScanFileCount());
 		assertEquals(NUM_FILES_TOTAL - NUM_FILES_POTENTIALLY_VULNERABLE, scanner2.getMitigatedFileCount());
 		assertEquals(NUM_FILES_POTENTIALLY_VULNERABLE, scanner2.getPotentiallyVulnerableFileCount());
+		assertEquals(NUM_FILES_VULNERABLE, scanner1.getFixedFileCount());
 		assertEquals(0, scanner2.getVulnerableFileCount());
 	}
 
@@ -81,6 +82,7 @@ public class Log4j1ScannerTest {
 		assertEquals(NUM_FILES_VULNERABLE, scanner1.getVulnerableFileCount());
 		assertEquals(NUM_FILES_POTENTIALLY_VULNERABLE, scanner1.getPotentiallyVulnerableFileCount());
 		assertEquals(NUM_FILES_VULNERABLE, scanner1.getVulnerableFileCount());
+		assertEquals(NUM_FILES_VULNERABLE, scanner1.getFixedFileCount());
 		Log4j1Scanner scanner2 = new Log4j1Scanner();
 		scanner2.run(new String[] { this.workingDir.toString() });
 		assertEquals(NUM_FILES_TOTAL * 1l, scanner2.getScanFileCount());
