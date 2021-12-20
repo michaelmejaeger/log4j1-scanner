@@ -16,11 +16,31 @@ import org.junit.Test;
 
 public class Log4j1ScannerTest {
 
+	/**
+	 * Total number of test files.
+	 */
         private static final int NUM_FILES_TOTAL = 7;
+
+        /**
+         * Number of test files that have been already mitigated.
+         */
         private static final int NUM_FILES_MITIGATED = 1;
+        
+        /**
+         * Number of test files that are vulnerable.
+         */
         private static final int NUM_FILES_VULNERABLE = 4;
+        
+        /**
+         * Number of test files that are potentially vulnerable.
+         */
         private static final int NUM_FILES_POTENTIALLY_VULNERABLE = 2;
+        
+        /**
+         * Directory where the test files are stored.
+         */
 	private static final String ARCHIVES_DIRECTORY = "src/test/resources/archives";
+	
 	final static Path ARCHIVES_PATH = Paths.get(ARCHIVES_DIRECTORY);
 	private Path workingDir;
 
