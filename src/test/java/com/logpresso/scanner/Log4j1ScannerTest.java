@@ -73,6 +73,29 @@ public class Log4j1ScannerTest {
 		scanner0.run(new String[] {});
 		assertEquals(0, scanner0.getVulnerableFileCount());
 		assertEquals(0, scanner0.getPotentiallyVulnerableFileCount());
+		assertEquals(0l, scanner0.getScanDirCount());
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void test_all_parameters() throws IOException {
+		Log4j1Scanner scanner0 = new Log4j1Scanner();
+		scanner0.run(new String[] {"--fix", "--debug", "--trace", "--silent", "--scan-zip", "--no-symlink", "--exclude", "tmp", "--exclude-pattern", "pattern", "--exclude-config", "exclude-config-files"});
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void test_windows_all_drives_parameter() throws IOException {
+		Log4j1Scanner scanner0 = new Log4j1Scanner();
+		scanner0.run(new String[] {"--all-drives"});
+		assertEquals(0, scanner0.getVulnerableFileCount());
+		assertEquals(0, scanner0.getPotentiallyVulnerableFileCount());
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void test_windows_drives_parameter() throws IOException {
+		Log4j1Scanner scanner0 = new Log4j1Scanner();
+		scanner0.run(new String[] {"--drives", "a"});
+		assertEquals(0, scanner0.getVulnerableFileCount());
+		assertEquals(0, scanner0.getPotentiallyVulnerableFileCount());
 	}
 	
 	@Test
