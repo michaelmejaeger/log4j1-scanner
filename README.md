@@ -20,8 +20,10 @@ Usage: log4j1-scan [--fix] target_path
   Backup original file and remove dangerous classes from archive recursively.
 --force-fix
   Do not prompt confirmation. Don't use this option unless you know what you are doing.
+--fix-potentially-vulnerable
+  Fix also files which are potentially vulnerable. Don't use this option unless you know what you are doing.
 --keep-backup
-  Keep the backup of the original file for each file that is modified. The extension of the keepBackup file is '.bak'.
+  Keep the backup of the original file for each file that is modified. The extension of the backup file is '.bak'.
 --debug
   Print exception stacktrace for debugging.
 --trace
@@ -46,7 +48,7 @@ Usage: log4j1-scan [--fix] target_path
 
 On Linux
 ```
-java -jar log4j1-scanner-1.1.1 [--fix] target_path
+java -jar log4j1-scanner-1.2.0 [--fix] target_path
 ```
 
 If you add `--fix` option, this program will copy vulnerable original JAR file to .bak file, and create new JAR file without the potentially dangerous class files. However, you must use this option at your own risk. It is necessary to shutdown any running JVM process before applying patch. This backup file is only kept if the switch `--backup` is used. Start affected JVM process after fix.

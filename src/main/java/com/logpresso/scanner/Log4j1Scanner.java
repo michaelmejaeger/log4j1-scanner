@@ -34,7 +34,7 @@ import java.util.zip.ZipOutputStream;
 public class Log4j1Scanner {
 	private static final String CVE_SOCKET_SERVER = "CVE-2019-17571";
 	private static final String CVE_JMS_APPENDER = "CVE-2021-4104";
-	public static final String VERSION = "v1.1.1";
+	public static final String VERSION = "v1.2.0";
 	private static final String SOCKET_SERVER_CLASS_FILE = "org/apache/log4j/net/SocketServer.class";
 	private static final String JMS_APPENDER_CLASS_FILE = "org/apache/log4j/net/JMSAppender.class";
 	private static final Set<String> DANGEROUS_CLASS_FILES = new HashSet<String>(Arrays.asList(SOCKET_SERVER_CLASS_FILE, JMS_APPENDER_CLASS_FILE));
@@ -64,6 +64,7 @@ public class Log4j1Scanner {
 	private int potentiallyVulnerableFileCount = 0;
 
 	private Set<File> vulnerableFiles = new LinkedHashSet<File>();
+	private Set<File> potentiallyVulnerableFiles = new LinkedHashSet<File>();
 
 	// options
 	private String targetPath;
@@ -72,6 +73,7 @@ public class Log4j1Scanner {
 	private boolean trace = false;
 	private boolean silent = false;
 	private boolean fix = false;
+	private boolean fixPotentiallyVulnerable = false;
 	private boolean force = false;
 	private boolean scanZip = false;
 	private boolean noSymlink = false;
@@ -125,6 +127,8 @@ public class Log4j1Scanner {
 		System.out.println("\tBackup original file and remove dangerous classes from archive recursively.");
 		System.out.println("--force-fix");
 		System.out.println("\tDo not prompt confirmation. Don't use this option unless you know what you are doing.");
+		System.out.println("--fix-potentially-vulnerable");
+		System.out.println("\tFix also files which are potentially vulnerable. Don't use this option unless you know what you are doing.");
 		System.out.println("--keep-backup");
 		System.out.println("\tKeep the backup of the original file for each file that is modified. The extension of the backup file is '.bak'.");
 		System.out.println("--debug");
@@ -158,6 +162,8 @@ public class Log4j1Scanner {
 			} else if (args[i].equals("--force-fix")) {
 				fix = true;
 				force = true;
+			} else if (args[i].equals("--fix-potentially-vulnerable")) {
+				this.fixPotentiallyVulnerable = true;
 			} else if (args[i].equals("--keep-backup")) {
 				this.keepBackup = true;
 			} else if (args[i].equals("--debug")) {
@@ -351,6 +357,11 @@ public class Log4j1Scanner {
 	}
 
 	private void fix(boolean trace) {
+		Set<File> vulnerableFiles = new LinkedHashSet<File>(this.vulnerableFiles);
+		if(!this.potentiallyVulnerableFiles.isEmpty() && this.fixPotentiallyVulnerable) {
+			vulnerableFiles.addAll(this.potentiallyVulnerableFiles);
+		}
+		
 		if (!vulnerableFiles.isEmpty())
 			System.out.println("");
 
@@ -752,10 +763,13 @@ public class Log4j1Scanner {
 			else if (mitigated)
 				mitigatedFileCount++;
 			else if (potentiallyVulnerable)
-				potentiallyVulnerableFileCount++;
+				this.potentiallyVulnerableFileCount++;
 
 			if (fix && vulnerable)
 				vulnerableFiles.add(jarFile);
+			if (fix && this.fixPotentiallyVulnerable && potentiallyVulnerable ) {
+				this.potentiallyVulnerableFiles.add(jarFile);
+			}
 
 		} catch (ZipException e) {
 			// ignore broken zip file

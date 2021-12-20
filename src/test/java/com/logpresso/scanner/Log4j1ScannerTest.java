@@ -109,4 +109,21 @@ public class Log4j1ScannerTest {
 		assertEquals(0, scanner2.getVulnerableFileCount());
 	}
 
+	@Test
+	public void fix_potentially_vulnerable_without_backup() throws IOException {
+		Log4j1Scanner scanner1 = new Log4j1Scanner();
+		scanner1.run(new String[] { "--force-fix", "--fix-potentially-vulnerable", this.workingDir.toString() });
+		assertEquals(NUM_FILES_TOTAL * 1l, scanner1.getScanFileCount());
+		assertEquals(NUM_FILES_MITIGATED, scanner1.getMitigatedFileCount());
+		assertEquals(NUM_FILES_VULNERABLE, scanner1.getVulnerableFileCount());
+		assertEquals(NUM_FILES_POTENTIALLY_VULNERABLE, scanner1.getPotentiallyVulnerableFileCount());
+		assertEquals(NUM_FILES_VULNERABLE + NUM_FILES_POTENTIALLY_VULNERABLE, scanner1.getFixedFileCount());
+		Log4j1Scanner scanner2 = new Log4j1Scanner();
+		scanner2.run(new String[] { this.workingDir.toString() });
+		assertEquals(NUM_FILES_TOTAL * 1l, scanner2.getScanFileCount());
+		assertEquals(NUM_FILES_VULNERABLE + NUM_FILES_MITIGATED, scanner2.getMitigatedFileCount());
+		assertEquals(0, scanner2.getPotentiallyVulnerableFileCount());
+		assertEquals(0, scanner2.getVulnerableFileCount());
+	}
+
 }
