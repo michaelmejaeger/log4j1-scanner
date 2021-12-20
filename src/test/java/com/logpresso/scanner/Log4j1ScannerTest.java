@@ -55,10 +55,10 @@ public class Log4j1ScannerTest {
 	public void fix_with_backup() throws IOException {
 		Log4j1Scanner scanner1 = new Log4j1Scanner();
 		scanner1.run(new String[] { "--force-fix", "--keep-backup", this.workingDir.toString() });
-		int numFilesTotal = 6;
+		int numFilesTotal = 7;
 		int numFilesMitigated = 1;
 		int numFilesVulnerable = 4;
-		int numFilesPotentiallyVulnerable = 1;
+		int numFilesPotentiallyVulnerable = 2;
 		assertEquals(numFilesTotal * 1l, scanner1.getScanFileCount());
 		assertEquals(numFilesMitigated, scanner1.getMitigatedFileCount());
 		assertEquals(numFilesVulnerable, scanner1.getVulnerableFileCount());
@@ -67,7 +67,7 @@ public class Log4j1ScannerTest {
 		Log4j1Scanner scanner2 = new Log4j1Scanner();
 		scanner2.run(new String[] { this.workingDir.toString() });
 		assertEquals(1l * (numFilesTotal + numFilesVulnerable), scanner2.getScanFileCount());
-		assertEquals(numFilesTotal - 1, scanner2.getMitigatedFileCount());
+		assertEquals(numFilesTotal - numFilesPotentiallyVulnerable, scanner2.getMitigatedFileCount());
 		assertEquals(numFilesPotentiallyVulnerable, scanner2.getPotentiallyVulnerableFileCount());
 		assertEquals(0, scanner2.getVulnerableFileCount());
 	}
@@ -76,10 +76,10 @@ public class Log4j1ScannerTest {
 	public void fix_without_backup() throws IOException {
 		Log4j1Scanner scanner1 = new Log4j1Scanner();
 		scanner1.run(new String[] { "--force-fix", this.workingDir.toString() });
-		int numFilesTotal = 6;
+		int numFilesTotal = 7;
 		int numFilesMitigated = 1;
 		int numFilesVulnerable = 4;
-		int numFilesPotentiallyVulnerable = 1;
+		int numFilesPotentiallyVulnerable = 2;
 		assertEquals(numFilesTotal * 1l, scanner1.getScanFileCount());
 		assertEquals(numFilesMitigated, scanner1.getMitigatedFileCount());
 		assertEquals(numFilesVulnerable, scanner1.getVulnerableFileCount());
@@ -88,7 +88,7 @@ public class Log4j1ScannerTest {
 		Log4j1Scanner scanner2 = new Log4j1Scanner();
 		scanner2.run(new String[] { this.workingDir.toString() });
 		assertEquals(numFilesTotal * 1l, scanner2.getScanFileCount());
-		assertEquals(numFilesTotal - 1, scanner2.getMitigatedFileCount());
+		assertEquals(numFilesTotal - numFilesPotentiallyVulnerable, scanner2.getMitigatedFileCount());
 		assertEquals(numFilesPotentiallyVulnerable, scanner2.getPotentiallyVulnerableFileCount());
 		assertEquals(0, scanner2.getVulnerableFileCount());
 	}
