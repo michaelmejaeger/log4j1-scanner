@@ -55,6 +55,8 @@ If you add `--fix` option, this program will copy vulnerable original JAR file t
 
 If you want to automate patch job, use `--force-fix` option. With this option, this program will no longer prompt for confirmation.
 
+If you really want to also fix potentially vulnerable files (i.e. files, which contain the dangerous classes, but which do not contain proper versioning information), then you may want to use the `--fix-potentially-vulnerable` option in addition to the respective `fix` options.
+
 `(mitigated)` tag will be displayed if the potentially dangerous class files are removed from the respective archive.
 
 If you add `--trace` option, this program will print all visited directories and files. Use this option only for debugging.
